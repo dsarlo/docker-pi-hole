@@ -52,6 +52,7 @@ images = {
         {
             'base': 'multiarch/debian-debootstrap:armel-stretch-slim',
             'arch': 'armel',
+            'build': True, # incompatible upstream binaries
             's6arch': 'arm',
         },
         {
@@ -121,6 +122,7 @@ def build(docker_repo, arch, args):
     dockerfile = 'Dockerfile_{}'.format(arch)
     repo_tag = '{}:{}_{}'.format(docker_repo, __version__, arch)
     cached_image = '{}/{}'.format('pihole', repo_tag)
+    build_tag = '{}:{}_{}'.format('pihole', 'build', arch)
     print(" ::: Building {}".format(repo_tag))
     time=''
     if args['-t']:
@@ -128,8 +130,8 @@ def build(docker_repo, arch, args):
     no_cache = ''
     if args['--no-cache']:
         no_cache = '--no-cache'
-    build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag}" -f {dockerfile} -t {create_tag} .'\
-        .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag)
+    build_command = '{time}docker build {no_cache} --pull --cache-from="{cache},{create_tag},{build_tag}" -f {dockerfile} -t {create_tag} .'\
+        .format(time=time, no_cache=no_cache, cache=cached_image, dockerfile=dockerfile, create_tag=repo_tag, build_tag=build_tag)
     print(" ::: Building {} into {}".format(dockerfile, repo_tag))
     run_and_stream_command_output(build_command, args)
     if args['-v']:
