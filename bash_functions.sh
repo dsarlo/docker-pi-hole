@@ -284,10 +284,15 @@ setup_web_port() {
 
     # Update lighttpd's port
     sed -i '/server.port\s*=\s*80\s*$/ s/80/'$WEB_PORT'/g' /etc/lighttpd/lighttpd.conf
-    # Update any default port 80 references in the HTML
-    grep -Prl '://127\.0\.0\.1/' /var/www/html/ | xargs -r sed -i "s|/127\.0\.0\.1/|/127.0.0.1:${WEB_PORT}/|g"
-    grep -Prl '://pi\.hole/' /var/www/html/ | xargs -r sed -i "s|/pi\.hole/|/pi\.hole:${WEB_PORT}/|g"
 
+}
+
+load_web_password_secret() {
+   # If WEBPASSWORD is not set at all, attempt to read password from WEBPASSWORD_FILE,
+   # allowing secrets to be passed via docker secrets
+   if [ -z "${WEBPASSWORD+x}" ] && [ -n "${WEBPASSWORD_FILE}" ] && [ -r "${WEBPASSWORD_FILE}" ]; then
+     WEBPASSWORD=$(<"${WEBPASSWORD_FILE}")
+   fi;
 }
 
 generate_password() {
